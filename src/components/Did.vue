@@ -20,10 +20,10 @@
               <el-button type="text" class="shareBtn" @click="handleCopy()">Copy</el-button>
             </el-col>
             <el-col :span="2" class="shareBtnContainer">
-              <el-button type="text" class="shareBtn" @click="handleShare()">Share</el-button>
+              <el-button type="text" class="shareBtn" @click="handleShare(did)">Share</el-button>
             </el-col>
             <el-col :span="2" class="shareBtnContainer">
-              <el-button type="text" class="revokeBtn" @click="handleRevoke()">Revoke</el-button>
+              <el-button type="text" class="revokeBtn" @click="handleRevoke(did)">Revoke</el-button>
             </el-col>
           </el-row>
         </div>
@@ -34,8 +34,8 @@
 
 <script>
 import { ethers } from 'ethers'
-const Newfang = window.newfang.default
-const { Uploader } = Newfang
+const Newfang = window.newfang
+const { Uploader, Utils } = Newfang
 const wallet = new ethers.Wallet("B2F6ACDF8D47EDD53A38D573325DAA9D2418A6FB1B141DB7A4AFAFB985E6BA49")
 
 export default {
@@ -128,6 +128,11 @@ export default {
           console.log({did});
           this.did = did;
           this.uploadDone = true;
+          localStorage.setItem(did, this.encryptionKey);
+        })
+
+        uploader.on("upload_complete" , (url) => {
+          this.encryptionKey = url.split(":")[2]
         })
 
         uploader.on("upload_progress", (percentage) => {
@@ -151,7 +156,7 @@ export default {
       });
     },
 
-    handleShare() {
+    handleShare(did) {
       this.$prompt('Please enter the Public Key of recipient', 'Give Access', {
         confirmButtonText: 'Confirm',
         cancelButtonText: 'Cancel',
@@ -160,12 +165,24 @@ export default {
       }).then(({ value }) => {
         //share code
         console.log(value);
+        const encryptionKey = localStorage.getItem(did)
+        console.log(encryptionKey);
+        const util = new Utils({ did, convergence: ""}, { blockchain: {provider: ethers, wallet }})
+        util.setIdentity(localStorage.getItem('pvt_key'));
+        util.on("response", (data) => {
+          console.log({ data })
+          this.$message({
+          message: 'File shared successfully.',
+          type: 'success'
+          })  
+        });
+        util.share(value, encryptionKey);
       }).catch(() => {
 
       })
     },
 
-    handleRevoke() {
+    handleRevoke(did) {
       this.$prompt('Please enter the Ethereum Address you want to revoke access to', 'Revoke Access', {
         confirmButtonText: 'Confirm',
         cancelButtonText: 'Cancel',
@@ -174,6 +191,16 @@ export default {
       }).then(({ value }) => {
         //revoke code
         console.log(value);
+        const util = new Utils({ did, convergence: ""}, { blockchain: {provider: ethers, wallet }})
+        util.setIdentity(localStorage.getItem('pvt_key'));
+        util.on("response", (data) => {
+          console.log({ data })
+          this.$message({
+          message: 'File permission revoked successfully.',
+          type: 'success'
+          })  
+        });
+        util.revoke(value);
       }).catch(() => {
 
       })
