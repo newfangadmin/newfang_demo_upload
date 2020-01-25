@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Newfang Browser SDK</title>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+        
+        <style>
+.task-list-item { list-style-type: none; } .task-list-item-checkbox { margin-left: -20px; vertical-align: middle; }
+</style>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        
+        
+    </head>
+    <body class="vscode-light">
+        <h1 id="newfang-browser-sdk">Newfang Browser SDK</h1>
+<p><img src="https://newfang.io/img/newfang.svg" alt=""></p>
+<p>This is the browser SDK.</p>
+<h2 id="installation">Installation</h2>
+<p>Download your SDK from provided link</p>
+<h2 id="usage">Usage</h2>
+<h3 id="getting-started">Getting Started</h3>
+<p>Add your library to the html</p>
+<pre><code class="language-html"><div><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"../path/to/sdk/newfang.js"</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"../path/to/ethers.js"</span>&gt;</span><span class="undefined"></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</div></code></pre>
+<h3 id="common">Common</h3>
+<pre><code class="language-javascript"><div>
+<span class="hljs-keyword">const</span> { Uploader, Downloader, Utils } = <span class="hljs-built_in">window</span>.newfang;
+<span class="hljs-keyword">const</span> ethers = <span class="hljs-built_in">window</span>.ethers;
+<span class="hljs-keyword">const</span> wallet = <span class="hljs-keyword">new</span> ethers.Wallet(<span class="hljs-string">"/dev_private_key"</span>);
+}
+
+</div></code></pre>
+<h3 id="uploader">Uploader</h3>
+<pre><code class="language-javascript"><div><span class="hljs-keyword">const</span> convergence = Uploader.generate_convergence();
+
+<span class="hljs-keyword">const</span> uploader = <span class="hljs-keyword">new</span> Uploader({
+    file, <span class="hljs-comment">// file object</span>
+    convergence
+}, {
+    <span class="hljs-attr">blockchain</span>: {
+        <span class="hljs-attr">provider</span>: ethers,
+        wallet
+    }
+});
+
+uploader.setIdentity(identity) <span class="hljs-comment">// identity is private key as raw string</span>
+
+uploader.on(<span class="hljs-string">"error"</span>, (e) =&gt; <span class="hljs-built_in">console</span>.log(e));
+
+uploader.on(<span class="hljs-string">"upload_progress"</span>, (percentage) =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"upload progress: "</span>, percentage + <span class="hljs-string">"%"</span>);
+});
+
+uploader.on(<span class="hljs-string">"upload_complete"</span>, (url) =&gt; {
+    <span class="hljs-built_in">console</span>.log({ url });
+    <span class="hljs-comment">//upload complete</span>
+});
+
+uploader.on(<span class="hljs-string">"did_created"</span>, (did) =&gt; {
+    <span class="hljs-built_in">console</span>.log({did});
+    <span class="hljs-comment">//Store did     </span>
+})
+
+uploader.start_upload()
+
+</div></code></pre>
+<h3 id="downloader">Downloader</h3>
+<pre><code class="language-javascript"><div><span class="hljs-keyword">const</span> did = <span class="hljs-string">"did:newfang:..."</span>;
+<span class="hljs-keyword">const</span> downloader = <span class="hljs-keyword">new</span> Downloader({ did, <span class="hljs-attr">encryptionKey</span>: <span class="hljs-string">"fileEncryptionKey"</span> }, {
+    <span class="hljs-attr">useWorkers</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">blockchain</span>: {
+        <span class="hljs-attr">provider</span>: ethers,
+        wallet
+    }
+});
+
+downloader.setIdentity(identity) <span class="hljs-comment">// identity is private key as raw string</span>
+
+downloader.on(<span class="hljs-string">"download_complete"</span>, () =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"download complete"</span>);
+    <span class="hljs-comment">// inform your app</span>
+});
+    
+downloader.on(<span class="hljs-string">"download_progress"</span>, (percentage) =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"download progress: "</span>, percentage + <span class="hljs-string">"%"</span>);
+    <span class="hljs-comment">// inform your app</span>
+});
+
+downloader.on(<span class="hljs-string">"error"</span>, (e) =&gt; {
+    <span class="hljs-built_in">console</span>.log({ e });
+    <span class="hljs-comment">// inform your app</span>
+});
+
+downloader.start_download(file_name_with_extension);
+
+</div></code></pre>
+<h3 id="utils">Utils</h3>
+<pre><code class="language-javascript"><div><span class="hljs-keyword">const</span> did = <span class="hljs-string">"did:newfang:..."</span>; 
+
+<span class="hljs-keyword">const</span> util = <span class="hljs-keyword">new</span> Utils({ did, <span class="hljs-attr">convergence</span>: <span class="hljs-string">""</span> }, {
+    <span class="hljs-attr">blockchain</span>: {
+        <span class="hljs-attr">provider</span>: ethers,
+        wallet
+    }
+});
+
+util.setParams(params);
+
+util.setIdentity(identity)
+
+util.on(<span class="hljs-string">'response'</span>, (data) =&gt; {
+    <span class="hljs-built_in">console</span>.log({ data });
+});
+
+util.share(publicKey, encryptionKey);
+<span class="hljs-comment">// or</span>
+util.share(publicKey, encryptionKey, did)
+
+<span class="hljs-comment">// For revoke</span>
+
+util.revoke(address)
+<span class="hljs-comment">// or</span>
+util.revoke(address, did)
+
+</div></code></pre>
+<h3 id="notes">Notes</h3>
+<p>If the file is shared with someone, encryption key is not necessary in the downloader</p>
+<h2 id="contributing">Contributing</h2>
+<p>Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.</p>
+<p>Please make sure to update tests as appropriate.</p>
+<h2 id="license">License</h2>
+<p>None</p>
+
+    </body>
+    </html>
