@@ -20,7 +20,7 @@
               <el-button type="text" class="shareBtn" @click="handleCopy()">Copy</el-button>
             </el-col>
             <el-col :span="2" class="shareBtnContainer">
-              <el-button type="text" class="shareBtn" @click="handleShareBtnClick()">Share</el-button>
+              <el-button type="text" class="shareBtn" @click="handleShare()">Share</el-button>
             </el-col>
             <el-col :span="2" class="shareBtnContainer">
               <el-button type="text" class="revokeBtn" @click="handleRevoke()">Revoke</el-button>
@@ -149,6 +149,34 @@ export default {
       () => {
         this.$message.error('Copy failed. Try again');
       });
+    },
+
+    handleShare() {
+      this.$prompt('Please enter the Public Key of recipient', 'Give Access', {
+        confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
+        inputPattern: /^[0-9a-f]{130}$/,
+        inputErrorMessage: 'Invalid Ethereum Public Key'
+      }).then(({ value }) => {
+        //share code
+        console.log(value);
+      }).catch(() => {
+
+      })
+    },
+
+    handleRevoke() {
+      this.$prompt('Please enter the Ethereum Address you want to revoke access to', 'Revoke Access', {
+        confirmButtonText: 'Confirm',
+        cancelButtonText: 'Cancel',
+        inputPattern: /^(0x)?[0-9a-f]{40}$/,
+        inputErrorMessage: 'Invalid Ethereum Address'
+      }).then(({ value }) => {
+        //revoke code
+        console.log(value);
+      }).catch(() => {
+
+      })
     }
   },
   mounted() {
@@ -209,7 +237,7 @@ export default {
   border: none;
 }
 
-.shareBtn:hover, .revokeBtn:hover {
+.shareBtn:hover, .shareBtn:active, .shareBtn:focus, .revokeBtn:hover, .revokeBtn:active, .revokeBtn:focus {
   background: none;
   border: none;
   color: #ff7500;
